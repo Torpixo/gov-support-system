@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام التحول الرقمي | دعم</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<!-- مكتبة SheetJS للتعامل مع ملفات إكسل -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root{
+    --bg:#e7f0dd;
+    --green:#5c8a3a;
+    --green-dark:#43712b;
+    --green-darker:#345a20;
+    --card-bg:#ffffff;
+    --input-bg:#eef6e6;
+    --input-border:#cfe3bd;
+    --text-dark:#2b3a22;
+    --text-gray:#6b7a61;
+    --topbar-bg:#e2e2e2;
+    --danger:#b3423a;
+    --danger-dark:#8f332c;
+    --radius:14px;
+    --shadow:0 6px 24px rgba(52,74,32,.12);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Tajawal',-apple-system,'Segoe UI',sans-serif;
+    background:var(--bg);
+    color:var(--text-dark);
+    min-height:100vh;
+  }
+  #app{max-width:1200px;margin:0 auto;padding:22px 22px 60px;}
+  a{color:inherit;text-decoration:none;}
+  button{font-family:inherit;cursor:pointer;border:none;}
+  input,select,textarea{font-family:inherit;}
+
+  /* ---------- Topbar ---------- */
+  .topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--topbar-bg);border-radius:12px;padding:14px 20px;margin-bottom:22px;gap:16px;flex-wrap:wrap;
+  }
+  .topbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .topbar-datetime{font-size:13px;color:#555;line-height:1.5;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-text{text-align:right;line-height:1.5;}
+  .brand-title{color:var(--green);font-weight:800;font-size:18px;}
+  .brand-sub{color:var(--text-gray);font-size:12.5px;font-weight:500;}
+  .logo-img{width:auto;max-width:180px;height:65px;object-fit:contain;border-radius:8px;}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    padding:10px 18px;border-radius:10px;font-weight:700;font-size:14px;
+    background:var(--green-dark);color:#fff;transition:.15s;white-space:nowrap;
+  }
+  .btn:hover{background:var(--green-darker);}
+  .btn.light{background:#dcecc9;color:var(--green-darker);}
+  .btn.light:hover{background:#cfe3ba;}
+  .btn.outline{background:transparent;color:var(--green-dark);border:1.5px solid var(--green-dark);}
+  .btn.outline:hover{background:#eef6e6;}
+  .btn.danger{background:var(--danger);}
+  .btn.danger:hover{background:var(--danger-dark);}
+  .btn.excel{background:#1d6f42;color:#fff;}
+  .btn.excel:hover{background:#155732;}
+  .btn.sm{padding:6px 12px;font-size:12.5px;border-radius:8px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+
+  /* ---------- Card / Login ---------- */
+  .center-wrap{display:flex;justify-content:center;padding-top:40px;}
+  .login-card{
+    background:var(--card-bg);border-radius:20px;box-shadow:var(--shadow);
+    width:100%;max-width:520px;padding:40px 42px 46px;text-align:center;
+  }
+  .login-logo{width:auto;height:100px;max-width:100%;margin:0 auto 14px;object-fit:contain;}
+  .login-title{color:var(--green);font-weight:800;font-size:22px;margin:6px 0 2px;}
+  .login-sub{color:var(--text-gray);font-size:14px;margin-bottom:30px;}
+  .field-label{display:block;color:var(--green-darker);font-weight:700;font-size:15px;margin-bottom:10px;}
+  .field-input{
+    width:100%;padding:14px 16px;border-radius:10px;border:1.5px solid var(--input-border);
+    background:var(--input-bg);font-size:15px;color:var(--text-dark);outline:none;
+  }
+  .field-input:focus{border-color:var(--green);}
+  .field-input::placeholder{color:#8fae7a;}
+  .mt{margin-top:22px;}
+  .link-muted{display:block;margin-top:22px;color:var(--green-dark);font-weight:700;font-size:14px;}
+  .link-muted:hover{text-decoration:underline;}
+  .error-msg{background:#fbe7e5;color:var(--danger-dark);border-radius:10px;padding:10px 14px;font-size:13.5px;margin-top:14px;text-align:right;}
+  .ok-msg{background:#e5f3da;color:var(--green-darker);border-radius:10px;padding:10px 14px;font-size:13.5px;margin-top:14px;text-align:right;}
+
+  /* ---------- Panel Card ---------- */
+  .panel{background:var(--card-bg);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;margin-bottom:24px;}
+  .panel-header{background:var(--green-dark);color:#fff;padding:18px 24px;font-size:18px;font-weight:800;display:flex;justify-content:space-between;align-items:center;}
+  .panel-body{padding:26px;}
+
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media(max-width:800px){.grid{grid-template-columns:1fr;}}
+  .field{display:flex;flex-direction:column;gap:8px;}
+  .field label{font-weight:700;color:var(--green-darker);font-size:14px;}
+  .field .readonly{background:#f2f2f2;color:#666;}
+
+  /* ---------- Chips ---------- */
+  .chip-group{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{
+    display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:999px;
+    border:1.5px solid var(--input-border);background:var(--input-bg);font-size:13.5px;
+    font-weight:600;color:var(--text-dark);cursor:pointer;user-select:none;
+  }
+  .chip input{accent-color:var(--green-dark);}
+  .chip.checked{background:#dcecc9;border-color:var(--green);color:var(--green-darker);}
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+  .tab{padding:9px 18px;border-radius:10px;font-weight:700;font-size:13.5px;background:#fff;color:var(--green-dark);box-shadow:0 2px 8px rgba(0,0,0,.05);cursor:pointer;}
+  .tab.active{background:var(--green-dark);color:#fff;}
+
+  /* ---------- Table ---------- */
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; position: relative; padding-right:20px;}
+  th.sortable:hover { background: var(--green-darker); }
+  .sort-icon { font-size: 11px; margin-right: 5px; opacity: 0.6; display: inline-block; width: 12px; }
+  .sort-icon.active { opacity: 1; color: #fff; }
+  thead th{background:var(--green-dark);color:#fff;padding:11px 10px;text-align:center;font-weight:700;white-space:nowrap;}
+  tbody td{padding:10px;text-align:center;border-bottom:1px solid #eee;vertical-align:middle;}
+  tbody tr:hover{background:#f7faf3;}
+  .table-scroll{ overflow-x:auto; padding-bottom:120px; }
+  .status-pill{padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;}
+  .status-saved{background:#fdecd2;color:#93650b;}
+  .status-done{background:#dcecc9;color:var(--green-darker);}
+
+  details.action-pop{position:relative;display:inline-block;}
+  details.action-pop summary{list-style:none;cursor:pointer;padding:6px 12px;border-radius:8px;background:var(--input-bg);border:1px solid var(--input-border);font-size:12.5px;font-weight:600;}
+  details.action-pop summary::-webkit-details-marker{display:none;}
+  details.action-pop .pop-menu{
+    position:absolute;z-index:999;top:110%;right:0;background:#fff;border-radius:10px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.15);padding:10px;min-width:180px;text-align:right;
+    border:1px solid #ddd;
+  }
+  details.action-pop .pop-menu label{display:flex;align-items:center;gap:6px;font-size:12.5px;padding:6px 4px;cursor:pointer;justify-content:flex-end;}
+  details.action-pop .pop-menu label:hover{background:#f5f9f0;}
+
+  .filters-row{display:flex;gap:14px;flex-wrap:wrap;align-items:end;margin-bottom:18px;background:#f7faf3;padding:15px;border-radius:12px;border:1px solid var(--input-border);}
+  .filters-row .field{min-width:150px;}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;}
+  .search-input{padding:10px 14px;border-radius:10px;border:1.5px solid var(--input-border);background:var(--input-bg);min-width:260px;}
+
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:100;padding:20px;}
+  .modal{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:88vh;overflow:auto;box-shadow:var(--shadow);}
+  .modal-header{background:var(--green-dark);color:#fff;padding:16px 22px;font-weight:800;font-size:16px;display:flex;justify-content:space-between;align-items:center;}
+  .modal-body{padding:22px;}
+  .modal-close{background:transparent;color:#fff;font-size:20px;line-height:1;border:none;cursor:pointer;}
+
+  .hint{font-size:12.5px;color:var(--text-gray);margin-top:6px;line-height:1.6;}
+  .badge{display:inline-block;background:#dcecc9;color:var(--green-darker);border-radius:999px;padding:2px 10px;font-size:11.5px;font-weight:700;}
+  .empty-state{text-align:center;color:var(--text-gray);padding:40px 10px;font-size:14px;}
+  textarea.field-input{resize:vertical;min-height:90px;}
+
+  /* ---------- Print (مقاس A4 وإزالة المسارات وتوسيط الخلايا) ---------- */
+  #printArea { display: none; }
+  
+  @media print {
+    @page {
+      size: A4 portrait; /* إجبار مقاس الورقة لتكون A4 وتطبع بشكل عمودي */
+      margin: 0; /* تعيين الحواف لصفر يزيل مسار الملف والتاريخ ورقم الصفحة تلقائياً من المتصفح */
+    }
+    body {
+      margin: 0 !important;
+      padding: 12mm !important; /* مسافة أمان داخلية للطباعة بعيداً عن حواف الورقة */
+      background: #fff;
+    }
+    html, body {
+      height: max-content !important; 
+      min-height: auto !important;
+    }
+    #app { display: none !important; }
+    #printArea {
+      display: block !important;
+      position: relative !important;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    .print-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 3px solid #345a20;
+      padding-bottom: 10px;
+      margin-bottom: 15px;
+    }
+    .print-head img { max-width: 180px; max-height: 60px; object-fit: contain; }
+    .print-title { text-align: right; }
+    .print-title h1 { font-size: 16px; margin: 0; color: #345a20; }
+    .print-title p { font-size: 11px; margin: 2px 0 0; color: #555; }
+    .print-meta { font-size: 11px; color: #333; margin-bottom: 15px; display: flex; justify-content: space-between; font-weight: bold; }
+    
+    #printArea table {
+      width: 100% !important;
+      font-size: 10.5px !important; /* تصغير الخط ليتسع بشكل ممتاز */
+      border-collapse: collapse;
+      margin: 0 auto;
+    }
+    #printArea th, #printArea td {
+      padding: 4px 3px !important;
+      word-break: break-word !important; 
+      border: 1px solid #ccc !important; 
+      text-align: center !important; 
+      vertical-align: middle !important; 
+    }
+    #printArea th {
+      background-color: #345a20 !important; 
+      color: white !important;
+      -webkit-print-color-adjust: exact; 
+      print-color-adjust: exact;
+    }
+    #printArea tr { page-break-inside: avoid; } 
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="printArea"></div>
+
+<script>
+/* ============================================================
+   DAWAM / SABYA SUPPORT SYSTEM 
+   ============================================================ */
+
+const STORE_KEY = 'sabya_support_db_v1';
+const SERVICE_OPTIONS = ['أنظمة','أجهزة','طابعات','ماسح ضوئي','شبكة نت','أخرى'];
+const ACTION_OPTIONS  = ['جديد','تثبيت','صيانة','فورمات','ربط','كلمة مرور'];
+const DEFAULT_LOGO = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 100"><rect width="400" height="100" rx="15" fill="#f7faf3"/><text x="200" y="55" font-family="Tajawal, sans-serif" font-size="28" font-weight="bold" fill="#345a20" text-anchor="middle">أمانة منطقة جازان</text><text x="200" y="80" font-family="sans-serif" font-size="14" font-weight="bold" fill="#5c8a3a" text-anchor="middle">Jazan Municipality</text></svg>`);
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+
+/* دالة حماية النصوص العادية */
+function esc(s){ 
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); 
+}
+
+/* دالة خاصة بجداول العرض والطباعة: تضع علامة - للبيانات المفقودة وتوسيطها */
+function dis(s){
+    let str = String(s ?? '').trim();
+    if(str === '' || str === '—' || str === 'x' || str === 'null' || str === 'undefined') return '-';
+    return esc(str);
+}
+
+function todayStr(d){ d = d || new Date(); return d.toISOString().slice(0,10); }
+
+/* ---------------- DB layer ---------------- */
+function loadDB(){
+  let raw = localStorage.getItem(STORE_KEY);
+  let db = null;
+  if(raw){
+    try{ db = JSON.parse(raw); }catch(e){ console.error('DB parse error', e); }
+  }
+  
+  if(!db) {
+    db = {
+      employees: [
+        { id:'2020', name:'محمد علي محمد الخالدي', nationalId:'1012345678', mobile:'0501234567',
+          email:'msjjsa@momah.gov.sa', job:'فني دعم تقني', dept:'تقنية المعلومات', section:'الدعم الفني', isAdmin:true }
+      ],
+      tickets: [],
+      settings: {
+        adminPassword: 'admin',
+        orgLine1: 'نظام التحول الرقمي | دعم',
+        orgLine2: 'بلدية محافظة صبيا',
+        logo: DEFAULT_LOGO
+      }
+    };
+  }
+  return db;
+}
+
+function saveDB(){ 
+  if(DB.employees && DB.employees.length > 0) {
+      DB.employees.sort((a, b) => {
+          let numA = Number(a.id), numB = Number(b.id);
+          if(!isNaN(numA) && !isNaN(numB)) return numA - numB;
+          return String(a.id).localeCompare(String(b.id), 'ar');
+      });
+  }
+  localStorage.setItem(STORE_KEY, JSON.stringify(DB)); 
+}
+let DB = loadDB();
+
+/* ---------------- App state ---------------- */
+let session = null;
+let route = 'login';
+let saTab = 'tickets';
+let formServices = [];
+let formCustomService = '';
+let formNotes = '';
+let empSearch = '';
+let ticketSearch = ''; 
+let importPreview = null;
+let uiMsg = null;
+
+let selectedEmpIds = []; 
+let selectedTicketIds = []; // تتبع الطلبات المحددة في لوحة الإدارة
+
+let sortState = {
+    ticket: { col: null, dir: 1 },
+    emp:    { col: null, dir: 1 }
+};
+
+function setMsg(type,text){ uiMsg = {type,text}; }
+function clearMsg(){ uiMsg=null; }
+
+/* ---------------- Helpers ---------------- */
+function findEmployee(id){ return DB.employees.find(e => String(e.id).trim() === String(id).trim()); }
+function fmtDateTime(){
+  const now = new Date();
+  const d = now.toLocaleDateString('ar', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const t = now.toLocaleTimeString('ar', {hour:'2-digit', minute:'2-digit', second:'2-digit'});
+  return d + '، ' + t;
+}
+setInterval(()=>{ const el = document.getElementById('liveClock'); if(el) el.textContent = fmtDateTime(); }, 1000);
+
+function getUniqueDbValues(key) {
+   return [...new Set(DB.employees.map(e => e[key]).filter(Boolean))];
+}
+
+function topbar(leftButtonsHtml){
+  return `
+  <div class="topbar">
+    <div class="topbar-left">
+      ${leftButtonsHtml}
+    </div>
+    <div class="brand">
+      <div class="brand-text">
+        <div class="brand-title">${esc(DB.settings.orgLine1)}</div>
+        <div class="brand-sub">${esc(DB.settings.orgLine2)}</div>
+      </div>
+      <img class="logo-img" src="${DB.settings.logo}" alt="logo">
+    </div>
+  </div>`;
+}
+function clockLine(){
+  return `<div class="topbar-datetime" id="liveClock">${fmtDateTime()}</div>`;
+}
+
+function msgHtml(){
+  if(!uiMsg) return '';
+  const cls = uiMsg.type === 'error' ? 'error-msg' : 'ok-msg';
+  return `<div class="${cls}">${esc(uiMsg.text)}</div>`;
+}
+
+/* ---------------- Table Sorting Logic ---------------- */
+function handleSort(type, col) {
+    let s = sortState[type];
+    if(s.col === col) {
+        if(s.dir === 1) s.dir = -1;
+        else { s.col = null; s.dir = 1; }
+    } else {
+        s.col = col; s.dir = 1;
+    }
+    render();
+}
+
+function getSortIcon(type, col) {
+    let s = sortState[type];
+    if(s.col !== col) return '<span class="sort-icon">↕</span>';
+    return s.dir === 1 ? '<span class="sort-icon active">▴</span>' : '<span class="sort-icon active">▾</span>';
+}
+
+function sortArrayData(arr, col, dir) {
+    if(!col) return arr; 
+    return [...arr].sort((a, b) => {
+        let valA = a[col] || '';
+        let valB = b[col] || '';
+        if(!isNaN(valA) && !isNaN(valB) && valA !== '' && valB !== '') {
+            return (Number(valA) - Number(valB)) * dir;
+        }
+        return String(valA).localeCompare(String(valB), 'ar') * dir;
+    });
+}
+
+/* ============================================================
+   RENDER 
+   ============================================================ */
+function render(){
+  const app = document.getElementById('app');
+  
+  let focusedId = document.activeElement ? document.activeElement.id : null;
+  let selectionStart = 0;
+  let selectionEnd = 0;
+  
+  if (focusedId && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA')) {
+      try {
+          selectionStart = document.activeElement.selectionStart;
+          selectionEnd = document.activeElement.selectionEnd;
+      } catch(e) {}
+  }
+
+  let html = '';
+  if(!session){
+    html = route === 'adminLogin' ? renderAdminLogin() : renderLogin();
+  } else if(session.type === 'superadmin'){
+    html = renderSuperAdmin();
+  } else {
+    if(route === 'adminBoard' && session.emp.isAdmin) html = renderAdminBoard();
+    else if(route === 'empHistory') html = renderEmployeeHistory();
+    else html = renderEmployeeHome();
+  }
+  
+  app.innerHTML = html;
+
+  if (focusedId) {
+      let el = document.getElementById(focusedId);
+      if (el) {
+          el.focus();
+          try {
+              if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+                  el.setSelectionRange(selectionStart, selectionEnd);
+              }
+          } catch(e) {}
+      }
+  }
+}
+
+/* ---------------- LOGIN SCREENS ---------------- */
+function renderLogin(){
+  return `
+  <div class="center-wrap">
+    <div class="login-card">
+      <img class="login-logo" src="${DB.settings.logo}" alt="logo">
+      <div class="login-title">${esc(DB.settings.orgLine1)}</div>
+      <div class="login-sub">${esc(DB.settings.orgLine2)}</div>
+      <label class="field-label">الرقم الوظيفي</label>
+      <input id="empIdInput" class="field-input" placeholder="أدخل رقمك الوظيفي" autofocus
+             onkeydown="if(event.key==='Enter') doEmployeeLogin()">
+      ${msgHtml()}
+      <button class="btn mt" style="width:100%" onclick="doEmployeeLogin()">تسجيل دخول الموظف</button>
+      <a class="link-muted" href="#" onclick="clearMsg();route='adminLogin';render();return false;">دخول مسؤول النظام / الإدارة</a>
+    </div>
+  </div>`;
+}
+function doEmployeeLogin(){
+  const id = document.getElementById('empIdInput').value.trim();
+  if(!id){ setMsg('error','يرجى إدخال الرقم الوظيفي'); render(); return; }
+  const emp = findEmployee(id);
+  if(!emp){ setMsg('error','الرقم الوظيفي غير مسجل. يرجى التواصل مع الإدارة لإضافتك في النظام.'); render(); return; }
+  clearMsg();
+  session = { type:'employee', emp };
+  route = 'empHome';
+  formServices = []; formCustomService = ''; formNotes = '';
+  render();
+}
+
+function renderAdminLogin(){
+  return `
+  <div class="center-wrap">
+    <div class="login-card">
+      <img class="login-logo" src="${DB.settings.logo}" alt="logo">
+      <div class="login-title">دخول الإدارة العامة</div>
+      <div class="login-sub">صلاحيات كاملة على قاعدة البيانات والنظام</div>
+      <label class="field-label">كلمة المرور</label>
+      <input id="adminPassInput" type="password" class="field-input" placeholder="••••••••" autofocus
+             onkeydown="if(event.key==='Enter') doAdminLogin()">
+      ${msgHtml()}
+      <button class="btn mt" style="width:100%" onclick="doAdminLogin()">دخول</button>
+      <a class="link-muted" href="#" onclick="clearMsg();route='login';render();return false;">رجوع لتسجيل دخول الموظف</a>
+    </div>
+  </div>`;
+}
+function doAdminLogin(){
+  const p = document.getElementById('adminPassInput').value;
+  if(p !== DB.settings.adminPassword){ setMsg('error','كلمة المرور غير صحيحة'); render(); return; }
+  clearMsg();
+  session = { type:'superadmin' };
+  saTab = 'tickets';
+  render();
+}
+
+function logout(){ session=null; route='login'; clearMsg(); render(); }
+
+/* ---------------- EMPLOYEE: NEW REQUEST ---------------- */
+function renderEmployeeHome(){
+  const emp = session.emp;
+  const leftBtns = `
+    <button class="btn light sm" onclick="route='empHistory';render();">سجل الطلبات</button>
+    ${emp.isAdmin ? `<button class="btn sm" onclick="route='adminBoard';render();">لوحة الإدارة (صلاحية خاصة)</button>` : ''}
+    <button class="btn outline sm" onclick="logout()">تسجيل الخروج</button>
+    ${clockLine()}
+  `;
+  const chips = SERVICE_OPTIONS.map(s => {
+    const checked = formServices.includes(s);
+    return `<label class="chip ${checked?'checked':''}">
+      <input type="checkbox" ${checked?'checked':''} onchange="toggleService('${s}')"> ${s}
+    </label>`;
+  }).join('');
+  return `
+  ${topbar(leftBtns)}
+  <div class="panel">
+    <div class="panel-header">تقديم طلب دعم جديد | مرحبًا: ${esc(emp.name)}</div>
+    <div class="panel-body">
+      <div class="grid">
+        <div class="field"><label>الإيميل</label><input class="field-input readonly" value="${esc(emp.email)}" readonly></div>
+        <div class="field"><label>اسم الموظف</label><input class="field-input readonly" value="${esc(emp.name)}" readonly></div>
+        <div class="field"><label>الرقم الوظيفي</label><input class="field-input readonly" value="${esc(emp.id)}" readonly></div>
+      </div>
+      <div class="field mt">
+        <label>تفاصيل الخدمة (يمكن اختيار أكثر من خدمة)</label>
+        <div class="chip-group">${chips}</div>
+      </div>
+      ${formServices.includes('أخرى') ? `
+        <div class="field mt">
+          <label>يرجى كتابة تفاصيل الخدمة المطلوبة</label>
+          <textarea id="customServiceInput" class="field-input" oninput="formCustomService=this.value">${esc(formCustomService)}</textarea>
+        </div>` : ''}
+        
+      <div class="field mt">
+        <label>ملاحظات (اختياري)</label>
+        <textarea id="notesInput" class="field-input" style="min-height:70px;" placeholder="اكتب هنا أي تفاصيل أو ملاحظات إضافية بخصوص الطلب..." oninput="formNotes=this.value">${esc(formNotes)}</textarea>
+      </div>
+
+      ${msgHtml()}
+      <button class="btn mt" style="font-size: 16px; padding: 12px 24px;" onclick="submitTicket()">إرسال الطلب للقسم المختص</button>
+    </div>
+  </div>`;
+}
+function toggleService(s){
+  const i = formServices.indexOf(s);
+  if(i>-1) formServices.splice(i,1); else formServices.push(s);
+  render();
+}
+function submitTicket(){
+  if(formServices.length === 0){ setMsg('error','يرجى اختيار تفاصيل الخدمة على الأقل'); render(); return; }
+  if(formServices.includes('أخرى') && !formCustomService.trim()){
+    setMsg('error','يرجى كتابة تفاصيل الخدمة المطلوبة عند اختيار "أخرى"'); render(); return;
+  }
+  const emp = session.emp;
+  DB.tickets.unshift({
+    id: uid(),
+    empId: emp.id, empName: emp.name, empEmail: emp.email,
+    services: [...formServices],
+    customService: formCustomService.trim(),
+    notes: formNotes.trim(),
+    action: [],
+    status: 'حفظ',
+    createdAt: new Date().toISOString()
+  });
+  saveDB();
+  formServices = []; formCustomService = ''; formNotes = '';
+  setMsg('ok','تم إرسال الطلب بنجاح، سيتم التواصل معك عند إنجازه.');
+  render();
+}
+
+/* ---------------- EMPLOYEE: HISTORY ---------------- */
+function renderEmployeeHistory(){
+  const emp = session.emp;
+  const leftBtns = `
+    <button class="btn light sm" onclick="route='empHome';clearMsg();render();">طلب دعم جديد</button>
+    ${emp.isAdmin ? `<button class="btn sm" onclick="route='adminBoard';render();">لوحة الإدارة</button>` : ''}
+    <button class="btn outline sm" onclick="logout()">تسجيل الخروج</button>
+    ${clockLine()}
+  `;
+  
+  const rows = DB.tickets.filter(t => t.empId === emp.id && t.status !== 'محذوف من قبل الموظف');
+  
+  return `
+  ${topbar(leftBtns)}
+  <div class="panel">
+    <div class="panel-header">سجل الطلبات الخاصة بك: ${esc(emp.name)}</div>
+    <div class="panel-body">
+      ${msgHtml()}
+      ${rows.length === 0 ? `<div class="empty-state">لا توجد طلبات سابقة أو نشطة</div>` : `
+      <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th>الخدمة المطلوبة</th><th>الملاحظات</th><th>تاريخ الطلب</th><th>الإجراء المتخذ</th><th>الحالة</th><th>إدارة الطلب</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(t => `
+            <tr>
+              <td>${dis(serviceLabel(t))}</td>
+              <td>${dis(t.notes)}</td>
+              <td>${new Date(t.createdAt).toLocaleDateString('ar')}</td>
+              <td>${t.action.length ? t.action.map(esc).join('، ') : '-'}</td>
+              <td><span class="status-pill ${t.status==='منجز'?'status-done':'status-saved'}">${dis(t.status)}</span></td>
+              <td>
+                ${t.status === 'حفظ' ? `<button class="btn danger sm" style="font-size:12px; padding:4px 8px;" onclick="cancelTicket('${t.id}')">🗑️ حذف الطلب</button>` : `<span class="hint" style="font-size:11px;">لا يمكن الحذف</span>`}
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+function cancelTicket(id) {
+    if(!confirm('هل أنت متأكد أنك لم تعد بحاجة لهذه الخدمة وتريد حذف الطلب؟ (لن يظهر في سجلك بعد الآن)')) return;
+    const t = DB.tickets.find(x => x.id === id);
+    if(t) {
+        t.status = 'محذوف من قبل الموظف'; 
+        saveDB();
+        setMsg('ok', 'تم حذف الطلب بنجاح.');
+        render();
+    }
+}
+
+function serviceLabel(t){
+  let s = t.services.filter(x=>x!=='أخرى').join(' - ');
+  if(t.services.includes('أخرى')) s += (s?' - ':'') + 'أخرى: ' + t.customService;
+  return s || '';
+}
+
+/* ---------------- ADMIN BOARD (granted employee) ---------------- */
+let boardFrom='', boardTo='';
+
+function getFilteredTickets() {
+  let rawRows = DB.tickets;
+  if(boardFrom) rawRows = rawRows.filter(t => todayStr(new Date(t.createdAt)) >= boardFrom);
+  if(boardTo) rawRows = rawRows.filter(t => todayStr(new Date(t.createdAt)) <= boardTo);
+  
+  if(ticketSearch) {
+      const q = ticketSearch.toLowerCase();
+      rawRows = rawRows.filter(t => 
+          (t.empId && t.empId.toLowerCase().includes(q)) || 
+          (t.empName && t.empName.toLowerCase().includes(q))
+      );
+  }
+  return rawRows;
+}
+
+/* وظائف التحديد المتعدد لحذف الطلبات */
+function toggleSelectTicket(id) {
+    const index = selectedTicketIds.indexOf(id);
+    if(index > -1) selectedTicketIds.splice(index, 1);
+    else selectedTicketIds.push(id);
+    render();
+}
+
+function toggleSelectAllTickets(evt) {
+    const isChecked = evt.target.checked;
+    let rawRows = getFilteredTickets();
+    if(isChecked) {
+        selectedTicketIds = rawRows.map(t => t.id);
+    } else {
+        selectedTicketIds = [];
+    }
+    render();
+}
+
+function deleteSelectedTickets() {
+    if(!confirm(`هل أنت متأكد من حذف ${selectedTicketIds.length} طلب(ات) نهائياً من قاعدة البيانات؟ لا يمكن التراجع.`)) return;
+    DB.tickets = DB.tickets.filter(t => !selectedTicketIds.includes(t.id));
+    selectedTicketIds = [];
+    saveDB();
+    render();
+}
+
+function renderAdminBoard(){
+  const emp = session.emp;
+  const leftBtns = `
+    <button class="btn light sm" onclick="route='empHome';clearMsg();render();">العودة للرئيسية</button>
+    <button class="btn outline sm" onclick="logout()">تسجيل الخروج</button>
+    ${clockLine()}
+  `;
+  return `
+  ${topbar(leftBtns)}
+  ${ticketBoardPanel(`لوحة تحكم الدعم الفني - مرحبًا بك: ${esc(emp.name)}`)}
+  `;
+}
+
+function ticketBoardPanel(headerTitle){
+  let rawRows = getFilteredTickets();
+  let rows = sortArrayData(rawRows, sortState.ticket.col, sortState.ticket.dir);
+
+  const isAllSelected = rows.length > 0 && rows.every(r => selectedTicketIds.includes(r.id));
+
+  return `
+  <div class="panel">
+    <div class="panel-header">${headerTitle}</div>
+    <div class="panel-body">
+      
+      <div class="toolbar" style="margin-bottom:15px; display:flex; justify-content:space-between; align-items:center;">
+        <input id="ticketSearchInput" class="search-input" style="width:100%; max-width:400px; border-color:var(--green);" placeholder="🔍 بحث عن موظف معين (بالاسم أو الرقم الوظيفي)..." value="${esc(ticketSearch)}" oninput="ticketSearch=this.value;render();">
+        ${selectedTicketIds.length > 0 ? `<button class="btn danger" onclick="deleteSelectedTickets()">🗑️ حذف المحدد (${selectedTicketIds.length})</button>` : ''}
+      </div>
+
+      <div class="filters-row">
+        <div class="field"><label>تصفية: من تاريخ</label><input id="boardFromInput" type="date" class="field-input" value="${esc(boardFrom)}" onchange="boardFrom=this.value;render();"></div>
+        <div class="field"><label>تصفية: إلى تاريخ</label><input id="boardToInput" type="date" class="field-input" value="${esc(boardTo)}" onchange="boardTo=this.value;render();"></div>
+        <div class="btn-row" style="align-items:flex-end;">
+          <button class="btn" onclick="printBoard()">🖨️ طباعة السجل</button>
+          <button class="btn excel" onclick="exportTicketsExcel()">📊 تصدير الطلبات (Excel)</button>
+          ${(boardFrom||boardTo||ticketSearch) ? `<button class="btn outline" onclick="boardFrom='';boardTo='';ticketSearch='';render();">إزالة الفلترة</button>`:''}
+        </div>
+      </div>
+      
+      <div style="font-size:14px;font-weight:bold;color:var(--green-darker);margin-bottom:12px;background:#eef6e6;padding:10px;border-radius:8px;">
+        الطلبات المعروضة حالياً: (${rows.length}) طلب
+      </div>
+      
+      ${rows.length===0 ? `<div class="empty-state">لا توجد طلبات مطابقة لبحثك</div>` : `
+      <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th style="width:30px;"><input type="checkbox" onchange="toggleSelectAllTickets(event)" ${isAllSelected ? 'checked' : ''} style="accent-color:var(--green-dark); width:16px; height:16px; cursor:pointer;" title="تحديد الكل"></th>
+          <th class="sortable" onclick="handleSort('ticket', 'empId')">الرقم الوظيفي ${getSortIcon('ticket', 'empId')}</th>
+          <th class="sortable" onclick="handleSort('ticket', 'empName')">اسم الموظف ${getSortIcon('ticket', 'empName')}</th>
+          <th>الخدمة المطلوبة</th>
+          <th>ملاحظات الموظف</th>
+          <th>الإجراء المتخذ (اختر)</th>
+          <th class="sortable" onclick="handleSort('ticket', 'status')">الحالة ${getSortIcon('ticket', 'status')}</th>
+          <th class="sortable" onclick="handleSort('ticket', 'createdAt')">التاريخ ${getSortIcon('ticket', 'createdAt')}</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(t => ticketRow(t)).join('')}
+        </tbody>
+      </table>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+function ticketRow(t){
+  const actionsChecklist = ACTION_OPTIONS.map(a => `
+    <label><input type="checkbox" ${t.action.includes(a)?'checked':''} onchange="toggleTicketAction('${t.id}','${a}')"> ${a}</label>
+  `).join('');
+  
+  const isDeleted = t.status === 'محذوف من قبل الموظف';
+  const statusSelectStyle = `padding:5px 8px; font-size:12.5px; min-width:125px; ${isDeleted ? 'color:var(--danger-dark); font-weight:bold; background-color:#fbe7e5; border-color:var(--danger);' : ''}`;
+
+  return `
+  <tr>
+    <td><input type="checkbox" onchange="toggleSelectTicket('${t.id}')" ${selectedTicketIds.includes(t.id) ? 'checked' : ''} style="accent-color:var(--green-dark); width:16px; height:16px; cursor:pointer;"></td>
+    <td style="font-weight:bold;">${dis(t.empId)}</td>
+    <td>${dis(t.empName)}</td>
+    <td>${dis(serviceLabel(t))}</td>
+    <td style="color:#555;font-size:12.5px;max-width:200px;">${dis(t.notes)}</td>
+    <td>
+      <details class="action-pop">
+        <summary>${t.action.length? t.action.length+' محدد ▾' : 'اختر الإجراء ▾'}</summary>
+        <div class="pop-menu">${actionsChecklist}</div>
+      </details>
+    </td>
+    <td>
+      <select class="field-input" style="${statusSelectStyle}" onchange="setTicketStatus('${t.id}', this.value)">
+        <option value="حفظ" ${t.status==='حفظ'?'selected':''}>حفظ</option>
+        <option value="منجز" ${t.status==='منجز'?'selected':''}>منجز</option>
+        <option value="محذوف من قبل الموظف" ${isDeleted?'selected':''}>محذوف (من الموظف)</option>
+      </select>
+    </td>
+    <td style="font-size:12px;">${new Date(t.createdAt).toLocaleDateString('ar')}</td>
+  </tr>`;
+}
+
+function toggleTicketAction(id, action){
+  const t = DB.tickets.find(x=>x.id===id); if(!t) return;
+  const i = t.action.indexOf(action);
+  if(i>-1) t.action.splice(i,1); else t.action.push(action);
+  saveDB(); render();
+}
+function setTicketStatus(id, status){
+  const t = DB.tickets.find(x=>x.id===id); if(!t) return;
+  t.status = status; saveDB(); render();
+}
+
+/* طباعة السجل */
+function printBoard(){
+  let rows = getFilteredTickets();
+  
+  rows.sort((a, b) => {
+      let numA = Number(a.empId), numB = Number(b.empId);
+      if(!isNaN(numA) && !isNaN(numB)) return numA - numB;
+      return String(a.empId).localeCompare(String(b.empId), 'ar');
+  });
+
+  const rangeText = (boardFrom||boardTo) ? `الفترة من ${boardFrom||'-'} إلى ${boardTo||'-'}` : 'كل الطلبات';
+  let filterText = ticketSearch ? ` | تم البحث عن: "${ticketSearch}"` : '';
+
+  const html = `
+    <div class="print-head">
+      <img src="${DB.settings.logo}">
+      <div class="print-title">
+        <h1>${esc(DB.settings.orgLine1)}</h1>
+        <p>${esc(DB.settings.orgLine2)}</p>
+      </div>
+    </div>
+    <div class="print-meta">
+      <span>تقرير طلبات الدعم — ${esc(rangeText)} ${esc(filterText)} (مرتب برقم الموظف)</span>
+      <span>عدد الطلبات: ${rows.length} | تاريخ الطباعة: ${new Date().toLocaleDateString('ar')}</span>
+    </div>
+    <table>
+      <thead><tr>
+        <th>الرقم الوظيفي</th>
+        <th>السجل المدني</th>
+        <th>اسم الموظف</th>
+        <th>رقم الجوال</th>
+        <th>ايميل الموظف</th>
+        <th>الخدمة المطلوبة</th>
+        <th>الملاحظات</th>
+        <th>الإجراء</th>
+        <th>الحالة</th>
+        <th>التاريخ</th>
+      </tr></thead>
+      <tbody>
+        ${rows.map(t => {
+          const emp = findEmployee(t.empId) || {};
+          return `<tr>
+            <td>${dis(t.empId)}</td>
+            <td>${dis(emp.nationalId)}</td>
+            <td>${dis(t.empName)}</td>
+            <td>${dis(emp.mobile)}</td>
+            <td>${dis(t.empEmail || emp.email)}</td>
+            <td>${dis(serviceLabel(t))}</td>
+            <td>${dis(t.notes)}</td>
+            <td>${t.action.length > 0 ? esc(t.action.join('، ')) : '-'}</td>
+            <td>${dis(t.status)}</td>
+            <td>${new Date(t.createdAt).toLocaleDateString('ar')}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>`;
+  document.getElementById('printArea').innerHTML = html;
+  
+  setTimeout(()=>window.print(), 200);
+}
+
+/* تصدير الطلبات للإكسل */
+function exportTicketsExcel(){
+  let rows = getFilteredTickets();
+  if(rows.length === 0) { alert("لا يوجد بيانات لتصديرها في هذا النطاق"); return; }
+
+  const exportData = rows.map(t => {
+      const emp = findEmployee(t.empId) || {};
+      return {
+          'الرقم الوظيفي': dis(t.empId),
+          'اسم الموظف': dis(t.empName),
+          'السجل المدني': dis(emp.nationalId),
+          'رقم الجوال': dis(emp.mobile),
+          'البريد الإلكتروني': dis(t.empEmail || emp.email),
+          'الخدمة المطلوبة': dis(serviceLabel(t)),
+          'ملاحظات الموظف': dis(t.notes),
+          'الإجراء المتخذ': t.action.length > 0 ? t.action.join('، ') : '-',
+          'الحالة': dis(t.status),
+          'تاريخ الطلب': new Date(t.createdAt).toLocaleString('ar')
+      };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(exportData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "طلبات الدعم");
+  XLSX.writeFile(wb, `طلبات_الدعم_${todayStr()}.xlsx`);
+}
+
+/* ============================================================
+   SUPER ADMIN
+   ============================================================ */
+function renderSuperAdmin(){
+  const leftBtns = `<button class="btn outline sm" onclick="logout()">تسجيل الخروج</button>${clockLine()}`;
+  const tabs = [
+    ['tickets','إدارة جميع طلبات الدعم'],
+    ['employees','قاعدة بيانات الموظفين (استيراد/تصدير)'],
+    ['permissions','إدارة الصلاحيات والأمان'],
+    ['backup','الإعدادات والنسخ الاحتياطي (Excel)'],
+  ];
+  return `
+  ${topbar(leftBtns)}
+  <div class="tabs">
+    ${tabs.map(([k,l]) => `<div class="tab ${saTab===k?'active':''}" onclick="saTab='${k}';clearMsg();render();">${l}</div>`).join('')}
+  </div>
+  ${saTab==='tickets' ? ticketBoardPanel('إدارة ومتابعة كل طلبات الدعم للنظام') : ''}
+  ${saTab==='employees' ? renderEmployeesTab() : ''}
+  ${saTab==='permissions' ? renderPermissionsTab() : ''}
+  ${saTab==='backup' ? renderBackupTab() : ''}
+  ${importPreview ? renderImportModal() : ''}
+  `;
+}
+
+/* ---- Employees CRUD tab ---- */
+let editingEmpId = null;
+function emptyEmpForm(){ return {id:'',name:'',nationalId:'',mobile:'',email:'',job:'',dept:'',section:'',isAdmin:false}; }
+let empForm = emptyEmpForm();
+
+/* وظائف التحديد المتعدد للحذف */
+function toggleSelectEmp(id) {
+    const index = selectedEmpIds.indexOf(id);
+    if(index > -1) selectedEmpIds.splice(index, 1);
+    else selectedEmpIds.push(id);
+    render();
+}
+
+function toggleSelectAllEmps(evt) {
+    const isChecked = evt.target.checked;
+    let rawList = DB.employees.filter(e => {
+        if(!empSearch) return true;
+        const q = empSearch.toLowerCase();
+        return (e.id+e.name+e.email).toLowerCase().includes(q);
+    });
+    if(isChecked) {
+        selectedEmpIds = rawList.map(e => e.id);
+    } else {
+        selectedEmpIds = [];
+    }
+    render();
+}
+
+function deleteSelectedEmps() {
+    if(!confirm(`هل أنت متأكد من حذف ${selectedEmpIds.length} موظف(ين) نهائياً من قاعدة البيانات؟`)) return;
+    DB.employees = DB.employees.filter(e => !selectedEmpIds.includes(e.id));
+    selectedEmpIds = [];
+    saveDB();
+    render();
+}
+
+function renderEmployeesTab(){
+  let rawList = DB.employees.filter(e => {
+    if(!empSearch) return true;
+    const q = empSearch.toLowerCase();
+    return (e.id+e.name+e.email).toLowerCase().includes(q);
+  });
+  
+  let list = sortArrayData(rawList, sortState.emp.col, sortState.emp.dir);
+  
+  const jobsList = getUniqueDbValues('job');
+  const deptsList = getUniqueDbValues('dept');
+  const sectionsList = getUniqueDbValues('section');
+
+  const isAllSelected = list.length > 0 && selectedEmpIds.length === list.length;
+
+  return `
+  <datalist id="jobsDataList">${jobsList.map(v => `<option value="${esc(v)}">`).join('')}</datalist>
+  <datalist id="deptsDataList">${deptsList.map(v => `<option value="${esc(v)}">`).join('')}</datalist>
+  <datalist id="sectsDataList">${sectionsList.map(v => `<option value="${esc(v)}">`).join('')}</datalist>
+
+  <div class="panel">
+    <div class="panel-header">${editingEmpId ? 'تعديل بيانات موظف' : 'إضافة موظف جديد لقاعدة البيانات'}</div>
+    <div class="panel-body">
+      ${msgHtml()}
+      <div class="grid">
+        <div class="field"><label>الرقم الوظيفي</label><input id="formEmpId" class="field-input" value="${esc(empForm.id)}" oninput="empForm.id=this.value"></div>
+        <div class="field"><label>الاسم باللغة العربية</label><input id="formEmpName" class="field-input" value="${esc(empForm.name)}" oninput="empForm.name=this.value"></div>
+        <div class="field"><label>السجل المدني</label><input id="formEmpNationalId" class="field-input" value="${esc(empForm.nationalId)}" oninput="empForm.nationalId=this.value"></div>
+        <div class="field"><label>رقم الجوال</label><input id="formEmpMobile" class="field-input" value="${esc(empForm.mobile)}" oninput="empForm.mobile=this.value"></div>
+        <div class="field"><label>الإيميل</label><input id="formEmpEmail" class="field-input" value="${esc(empForm.email)}" oninput="empForm.email=this.value"></div>
+        <div class="field"><label>الوظيفة</label><input id="formEmpJob" list="jobsDataList" class="field-input" placeholder="اختر أو اكتب..." value="${esc(empForm.job)}" oninput="empForm.job=this.value"></div>
+        <div class="field"><label>الإدارة</label><input id="formEmpDept" list="deptsDataList" class="field-input" placeholder="اختر أو اكتب..." value="${esc(empForm.dept)}" oninput="empForm.dept=this.value"></div>
+        <div class="field"><label>القسم</label><input id="formEmpSection" list="sectsDataList" class="field-input" placeholder="اختر أو اكتب..." value="${esc(empForm.section)}" oninput="empForm.section=this.value"></div>
+      </div>
+      <div class="btn-row mt">
+        <button class="btn" onclick="saveEmpForm()">${editingEmpId ? 'حفظ التعديل' : 'إضافة الموظف'}</button>
+        ${editingEmpId ? `<button class="btn outline" onclick="editingEmpId=null;empForm=emptyEmpForm();render();">إلغاء التعديل</button>` : ''}
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">
+       إدارة سجل الموظفين (إكسل)
+       <button class="btn excel sm" onclick="exportEmployeesExcel()" style="margin-right:auto;">⬇️ تصدير قاعدة الموظفين الحالية</button>
+    </div>
+    <div class="panel-body">
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div class="field">
+          <label>استيراد أو تحديث من ملف إكسل (الرقم الوظيفي غير إلزامي)</label>
+          <input type="file" class="field-input" accept=".xlsx,.xls,.csv" onchange="handleExcelImport(event)">
+          <div class="hint">النظام الآن سيقبل الملف حتى لو كانت خانة "الرقم الوظيفي" فارغة، وسيقوم بتوليد رقم مؤقت يمكنك تعديله لاحقاً.</div>
+        </div>
+        <div class="field">
+          <label>استيراد ذكي من صورة جدول <span class="badge">Beta</span></label>
+          <input type="file" class="field-input" accept="image/*" onchange="handleImageImport(event)">
+          <div class="hint">يستخدم تقنية OCR لاستخراج النصوص. (يحتاج مراجعة وتصحيح قبل الحفظ).</div>
+        </div>
+      </div>
+      <div id="ocrStatus" class="hint" style="color:var(--green-dark);font-weight:bold;margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">دليل الموظفين المسجلين (${list.length})</div>
+    <div class="panel-body">
+      
+      <div class="toolbar" style="display:flex; justify-content:space-between; align-items:center;">
+        <input id="empSearchInput" class="search-input" placeholder="🔍 بحث عن موظف معين (بالاسم أو الرقم الوظيفي)..." value="${esc(empSearch)}" oninput="empSearch=this.value;render();">
+        ${selectedEmpIds.length > 0 ? `<button class="btn danger" onclick="deleteSelectedEmps()">🗑️ حذف المحدد (${selectedEmpIds.length})</button>` : ''}
+      </div>
+      
+      <div class="table-scroll">
+      <table>
+        <thead><tr>
+          <th style="width:30px;"><input type="checkbox" onchange="toggleSelectAllEmps(event)" ${isAllSelected ? 'checked' : ''} style="accent-color:var(--green-dark); width:16px; height:16px; cursor:pointer;" title="تحديد الكل"></th>
+          <th class="sortable" onclick="handleSort('emp', 'id')">الرقم الوظيفي ${getSortIcon('emp', 'id')}</th>
+          <th class="sortable" onclick="handleSort('emp', 'name')">الاسم ${getSortIcon('emp', 'name')}</th>
+          <th>الإيميل</th>
+          <th class="sortable" onclick="handleSort('emp', 'job')">الوظيفة ${getSortIcon('emp', 'job')}</th>
+          <th class="sortable" onclick="handleSort('emp', 'dept')">الإدارة ${getSortIcon('emp', 'dept')}</th>
+          <th class="sortable" onclick="handleSort('emp', 'section')">القسم ${getSortIcon('emp', 'section')}</th>
+          <th>إدارة السجل</th>
+        </tr></thead>
+        <tbody>
+          ${list.map(e => `
+            <tr>
+              <td><input type="checkbox" onchange="toggleSelectEmp('${esc(e.id)}')" ${selectedEmpIds.includes(e.id) ? 'checked' : ''} style="accent-color:var(--green-dark); width:16px; height:16px; cursor:pointer;"></td>
+              <td style="font-weight:bold; ${String(e.id).includes('مؤقت') ? 'color:var(--danger);' : ''}">${dis(e.id)}</td>
+              <td>${dis(e.name)}</td><td>${dis(e.email)}</td>
+              <td>${dis(e.job)}</td><td>${dis(e.dept)}</td><td>${dis(e.section)}</td>
+              <td>
+                <div class="btn-row" style="justify-content:center;">
+                  <button class="btn light sm" onclick="startEditEmp('${esc(e.id)}')">تعديل</button>
+                  <button class="btn danger sm" onclick="deleteEmp('${esc(e.id)}')">حذف</button>
+                </div>
+              </td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function exportEmployeesExcel() {
+    if(DB.employees.length === 0) { alert("لا يوجد موظفين لتصديرهم"); return; }
+    
+    const ticketCounts = {};
+    if(DB.tickets) {
+        DB.tickets.forEach(t => { ticketCounts[t.empId] = (ticketCounts[t.empId]||0) + 1; });
+    }
+    
+    const exportData = DB.employees.map(e => ({
+        'الرقم الوظيفي': dis(e.id),
+        'الاسم': dis(e.name),
+        'السجل المدني': dis(e.nationalId),
+        'رقم الجوال': dis(e.mobile),
+        'الإيميل': dis(e.email),
+        'الوظيفة': dis(e.job),
+        'الإدارة': dis(e.dept),
+        'القسم': dis(e.section),
+        'عدد الطلبات': ticketCounts[e.id] || 0
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(exportData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "الموظفين");
+    XLSX.writeFile(wb, `قاعدة_الموظفين_${todayStr()}.xlsx`);
+}
+
+function startEditEmp(id){
+  const e = findEmployee(id); if(!e) return;
+  editingEmpId = id;
+  empForm = {...e};
+  clearMsg(); render();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function deleteEmp(id){
+  if(!confirm('تأكيد حذف هذا الموظف نهائيًا من قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+  DB.employees = DB.employees.filter(e => e.id !== id);
+  selectedEmpIds = selectedEmpIds.filter(selectedId => selectedId !== id);
+  saveDB(); render();
+}
+function saveEmpForm(){
+  if(!empForm.id.trim() || !empForm.name.trim()){ setMsg('error','الرقم الوظيفي والاسم حقلان مطلوبان'); render(); return; }
+  
+  if(editingEmpId){
+    if(editingEmpId !== empForm.id.trim()) {
+        if(findEmployee(empForm.id)) {
+            setMsg('error','هذا الرقم الوظيفي الجديد مسجل مسبقًا في قاعدة البيانات'); render(); return;
+        }
+        DB.tickets.forEach(t => {
+            if(t.empId === editingEmpId) {
+                t.empId = empForm.id.trim();
+                t.empName = empForm.name.trim(); 
+            }
+        });
+        
+        const selIdx = selectedEmpIds.indexOf(editingEmpId);
+        if(selIdx > -1) selectedEmpIds[selIdx] = empForm.id.trim();
+    }
+    const idx = DB.employees.findIndex(e => e.id === editingEmpId);
+    DB.employees[idx] = {...DB.employees[idx], ...empForm};
+  } else {
+    if(findEmployee(empForm.id)){ setMsg('error','هذا الرقم الوظيفي مسجل مسبقًا في قاعدة البيانات'); render(); return; }
+    DB.employees.push({...empForm, isAdmin:false});
+  }
+  
+  saveDB();
+  editingEmpId = null; empForm = emptyEmpForm();
+  setMsg('ok','تم حفظ وتحديث بيانات الموظف بنجاح');
+  render();
+}
+
+/* ---- Smart Excel import ---- */
+function normalizeHeader(str) {
+    if(!str) return '';
+    return String(str).replace(/[أإآ]/g, 'ا').replace(/ة/g, 'ه').replace(/\s+/g, '').trim().toLowerCase();
+}
+
+const HEADER_MAP = {
+  'الرقمالوظيفي':'id', 'رقمالموظف':'id', 'id':'id',
+  'الاسمباللغهالعربيه':'name', 'الاسم':'name', 'اسمالموظف':'name', 'name':'name',
+  'السجلالمدني':'nationalId', 'رقمالسجلالمدني':'nationalId', 'nationalid':'nationalId',
+  'رقمالجوال':'mobile', 'الجوال':'mobile', 'mobile':'mobile',
+  'ايميل':'email', 'الايميل':'email', 'البريدالالكتروني':'email', 'email':'email',
+  'الوظيفه':'job', 'job':'job',
+  'الاداره':'dept', 'dept':'dept',
+  'القسم':'section', 'section':'section'
+};
+
+function handleExcelImport(evt){
+  const file = evt.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const sheet = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(sheet, {defval:''});
+      
+      const rows = json.map(r => {
+        const row = emptyEmpForm();
+        Object.keys(r).forEach(h => {
+          const cleanHeader = normalizeHeader(h);
+          const key = HEADER_MAP[cleanHeader];
+          if(key) {
+              row[key] = (String(r[h]).trim() === 'x' || String(r[h]).trim() === '-') ? '' : String(r[h]).trim();
+          }
+        });
+        
+        if(!row.id || row.id === 'x' || row.id === '-') {
+           row.id = 'مؤقت-' + Math.floor(10000 + Math.random() * 90000);
+        }
+        return row;
+      });
+      
+      if(rows.length === 0){ alert('الملف المرفوع فارغ أو لا يحتوي على بيانات صالحة.'); return; }
+      importPreview = { rows, source:'excel' };
+      render();
+    }catch(err){
+      alert('حدث خطأ في قراءة الملف: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  evt.target.value = '';
+}
+
+function renderImportModal(){
+  if(importPreview.source === 'excel'){
+    return `
+    <div class="modal-backdrop">
+      <div class="modal">
+        <div class="modal-header">تأكيد الاستيراد من إكسل (${importPreview.rows.length} موظف)
+          <button class="modal-close" onclick="importPreview=null;render();">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="table-scroll" style="padding-bottom:10px;">
+            <table>
+              <thead><tr><th>رقم وظيفي</th><th>الاسم</th><th>الإدارة</th><th>القسم</th></tr></thead>
+              <tbody>
+                ${importPreview.rows.slice(0,50).map(r => `<tr><td style="${String(r.id).includes('مؤقت') ? 'color:red;' : ''}">${dis(r.id)}</td><td>${dis(r.name)}</td><td>${dis(r.dept)}</td><td>${dis(r.section)}</td></tr>`).join('')}
+              </tbody>
+            </table>
+          </div>
+          ${importPreview.rows.length>50 ? `<div class="hint">...تم عرض أول 50 صف فقط للمعاينة. سيتم استيراد كل الصفوف الموجودة في الملف.</div>`:''}
+          <div class="hint" style="color:var(--danger-dark);">ملاحظة هامة: الأرقام باللون الأحمر هي أرقام (مؤقتة) تم توليدها لأن خانة الرقم الوظيفي كانت فارغة في ملف الإكسل. يمكنك تعديلها لاحقاً.</div>
+          <div class="btn-row mt">
+            <button class="btn" onclick="confirmExcelImport()">تأكيد واعتماد الإكسل</button>
+            <button class="btn outline" onclick="importPreview=null;render();">إلغاء الأمر</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }
+  return '';
+}
+
+function upsertEmployees(rows){
+  let added=0, updated=0;
+  rows.forEach(r => {
+    if(!r.id || r.id === 'x' || r.id === '-') return;
+    const idx = DB.employees.findIndex(e => e.id === r.id);
+    if(idx>-1){ DB.employees[idx] = {...DB.employees[idx], ...r}; updated++; }
+    else { DB.employees.push({...r, isAdmin:false}); added++; }
+  });
+  saveDB(); 
+  setMsg('ok', `تم الانتهاء بنجاح: إضافة ${added} موظف، وتحديث بيانات ${updated} موظف مسجل مسبقاً.`);
+}
+function confirmExcelImport(){
+  upsertEmployees(importPreview.rows);
+  importPreview = null;
+  render();
+}
+
+/* ---- Permissions tab ---- */
+function renderPermissionsTab(){
+  const list = DB.employees;
+  return `
+  <div class="panel">
+    <div class="panel-header">منح / سحب صلاحيات الإدارة للموظفين</div>
+    <div class="panel-body">
+      <div class="hint" style="margin-bottom:14px;font-size:14px;">الموظف الذي تمنحه صلاحية الإدارة سيتمكن من الدخول إلى "لوحة الإدارة" عبر حسابه، وإدارة جميع طلبات الدعم (تصدير، طباعة، تعديل الحالة).</div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>الرقم الوظيفي</th><th>الاسم</th><th>القسم</th><th>صلاحية الإدارة (مدير النظام)</th></tr></thead>
+          <tbody>
+            ${list.map(e => `
+              <tr>
+                <td>${esc(e.id)}</td><td>${esc(e.name)}</td><td>${esc(e.section)}</td>
+                <td><input type="checkbox" ${e.isAdmin?'checked':''} onchange="toggleAdminFlag('${esc(e.id)}')" style="width:20px;height:20px;accent-color:var(--green-dark);cursor:pointer;"></td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">أمان الحساب الرئيسي - تغيير كلمة المرور</div>
+    <div class="panel-body">
+      ${msgHtml()}
+      <div class="grid" style="grid-template-columns:1fr 1fr;">
+        <div class="field"><label>كلمة المرور الجديدة</label><input id="newPassInput" type="password" class="field-input"></div>
+      </div>
+      <button class="btn mt" onclick="changeAdminPassword()">تحديث كلمة المرور</button>
+    </div>
+  </div>`;
+}
+function toggleAdminFlag(id){
+  const e = findEmployee(id); if(!e) return;
+  e.isAdmin = !e.isAdmin; saveDB(); render();
+}
+function changeAdminPassword(){
+  const v = document.getElementById('newPassInput').value;
+  if(!v || v.length<4){ setMsg('error','يرجى إدخال كلمة مرور آمنة لا تقل عن 4 خانات'); render(); return; }
+  DB.settings.adminPassword = v; saveDB();
+  setMsg('ok','تم تحديث كلمة مرور الإدارة بنجاح'); render();
+}
+
+/* ---- Backup / settings tab (EXCEL ONLY BACKUP) ---- */
+function renderBackupTab(){
+  return `
+  <div class="panel">
+    <div class="panel-header">تخصيص هوية النظام (اللوجو والمسميات)</div>
+    <div class="panel-body">
+      ${msgHtml()}
+      <div class="grid" style="grid-template-columns:1fr 1fr;align-items:end;">
+        <div class="field"><label>السطر الأول (اسم النظام)</label><input id="orgLine1" class="field-input" value="${esc(DB.settings.orgLine1)}"></div>
+        <div class="field"><label>السطر الثاني (الجهة)</label><input id="orgLine2" class="field-input" value="${esc(DB.settings.orgLine2)}"></div>
+      </div>
+      <div class="field mt">
+        <label>تغيير شعار الجهة لدمجه في الكود (اختياري)</label>
+        <input type="file" class="field-input" accept="image/*" onchange="handleLogoUpload(event)">
+        <div class="hint">ملاحظة: إذا قمت برفع اللوجو الخاص بك هنا، فسيقوم النظام بتحويله ودمجه بشكل دائم ولن تحتاج لوجود ملف logo.png بجانب الـ HTML بعد الآن.</div>
+      </div>
+      <button class="btn mt" onclick="saveOrgSettings()">حفظ التعديلات</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">النسخ الاحتياطي (Master Excel)</div>
+    <div class="panel-body">
+      <div class="hint" style="margin-bottom:14px;font-size:14px;line-height:1.8;">
+        سيقوم هذا الزر بتحميل ملف إكسل باسم <strong>(DB Backup)</strong> يحتوي فقط على قاعدة بيانات الموظفين بالكامل إضافة لعدد الطلبات الخاصة بكل موظف، وهو متوافق تماماً مع خانة (استيراد الموظفين).
+      </div>
+      <div class="btn-row">
+        <button class="btn excel" onclick="exportBackupExcel()">⬇️ تحميل نسخة احتياطية (Master Excel)</button>
+        <label class="btn danger" style="cursor:pointer;">
+          ⬆️ استعادة النظام من نسخة احتياطية (Excel)
+          <input type="file" accept=".xlsx,.xls" style="display:none" onchange="importBackupExcel(event)">
+        </label>
+      </div>
+    </div>
+  </div>`;
+}
+function handleLogoUpload(evt){
+  const file = evt.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { DB.settings.logo = e.target.result; saveDB(); render(); };
+  reader.readAsDataURL(file);
+}
+function saveOrgSettings(){
+  DB.settings.orgLine1 = document.getElementById('orgLine1').value.trim() || DB.settings.orgLine1;
+  DB.settings.orgLine2 = document.getElementById('orgLine2').value.trim() || DB.settings.orgLine2;
+  saveDB();
+  setMsg('ok','تم حفظ التعديلات'); render();
+}
+
+function exportBackupExcel(){
+  try {
+      const wb = XLSX.utils.book_new();
+
+      const ticketCounts = {};
+      if(DB.tickets) {
+          DB.tickets.forEach(t => { ticketCounts[t.empId] = (ticketCounts[t.empId]||0) + 1; });
+      }
+
+      let empData = [];
+      if(DB.employees && DB.employees.length > 0) {
+          empData = DB.employees.map(e => ({
+              'الرقم الوظيفي': dis(e.id),
+              'الاسم': dis(e.name),
+              'السجل المدني': dis(e.nationalId),
+              'رقم الجوال': dis(e.mobile),
+              'الإيميل': dis(e.email),
+              'الوظيفة': dis(e.job),
+              'الإدارة': dis(e.dept),
+              'القسم': dis(e.section),
+              'عدد الطلبات': ticketCounts[e.id] || 0
+          }));
+      } else {
+          empData = [{ 'الرقم الوظيفي': '-', 'الاسم': '-', 'ملاحظة': "لا يوجد موظفين حالياً" }];
+      }
+
+      const wsEmp = XLSX.utils.json_to_sheet(empData);
+      XLSX.utils.book_append_sheet(wb, wsEmp, "الموظفين");
+
+      XLSX.writeFile(wb, 'DB Backup.xlsx');
+  } catch (err) {
+      alert("حدث خطأ أثناء أخذ النسخة الاحتياطية. يرجى المحاولة مرة أخرى.");
+      console.error(err);
+  }
+}
+
+function importBackupExcel(evt){
+  const file = evt.target.files[0]; if(!file) return;
+  if(!confirm('تنبيه: سيتم استيراد/تحديث بيانات الموظفين من هذا الملف، ولن يتم مسح طلبات الدعم الحالية. هل أنت متأكد؟')) { evt.target.value=''; return; }
+  
+  const reader = new FileReader();
+  reader.onload = function(e){
+    try{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:'array'});
+      const newDB = { ...DB }; 
+
+      const empSheet = wb.Sheets["الموظفين"] || wb.Sheets["Employees"] || wb.Sheets[wb.SheetNames[0]];
+      if(empSheet){
+          const parsedEmp = XLSX.utils.sheet_to_json(empSheet, {defval:''});
+          if(!parsedEmp[0]?.['ملاحظة']) {
+              const cleanEmpList = [];
+              parsedEmp.forEach(r => {
+                  const row = {id:'', name:'', nationalId:'', mobile:'', email:'', job:'', dept:'', section:'', isAdmin:false};
+                  Object.keys(r).forEach(h => {
+                      const cleanH = normalizeHeader(h);
+                      const key = HEADER_MAP[cleanH];
+                      if(key) row[key] = (String(r[h]).trim() === 'x' || String(r[h]).trim() === '-') ? '' : String(r[h]).trim();
+                  });
+                  
+                  if(row.id && row.id !== '-' && row.id !== 'x') {
+                      const existing = DB.employees.find(x => x.id === row.id);
+                      if(existing) row.isAdmin = existing.isAdmin;
+                      cleanEmpList.push(row);
+                  }
+              });
+              if(cleanEmpList.length > 0) newDB.employees = cleanEmpList;
+          }
+      }
+
+      DB = newDB; 
+      saveDB();
+      setMsg('ok','تم استيراد وتحديث البيانات بنجاح');
+      render();
+    }catch(err){
+      alert('حدث خطأ فني أثناء قراءة الملف: تأكد من أن الملف سليم.');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  evt.target.value='';
+}
+
+/* ---------------- init ---------------- */
+render();
+</script>
+</body>
+</html>
